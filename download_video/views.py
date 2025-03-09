@@ -16,7 +16,7 @@ def download_video(request):
     try:
         
         # Get the video
-        yt = YouTube(url)
+        yt = YouTube(str(url))
         stream = yt.streams.get_highest_resolution()
 
         # Make the buffer
@@ -30,4 +30,7 @@ def download_video(request):
         return response_video
 
     except Exception as e:
-        return Response({'error': str(e)}, status=400)
+        import traceback
+        print("🔥 ERROR EN DESCARGA 🔥")
+        traceback.print_exc()
+        return Response({'Unexpected error': str(e)}, status=500)
