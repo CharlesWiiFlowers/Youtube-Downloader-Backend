@@ -1,5 +1,4 @@
 from django.urls import path
-from .views import test_view
 from .views import get_thumbnail
 
 urlpatterns = [
