@@ -23,7 +23,7 @@ def get_info_video(request):
         
         OPTIONS = {
             'format': FORMAT,
-            'outtmpl': '%(title)s.%(ext)s',
+            'outtmpl': 'media/%(title)s.%(ext)s',
             'merge_output_format': 'mp4', 
         }
 
@@ -39,7 +39,37 @@ def get_info_video(request):
         traceback.print_exc()
         return Response({'Unexpected error': str(e)}, status=500)
 
-    
 @api_view(['GET'])
 def download_video(request):
     """Download the video on the given URL"""
+
+    URL = request.GET.get('url')
+    if not URL:
+        return Response({'error': 'Missing URL parameter'}, status=400)
+
+    OPTIONS = {
+        'format': 'bestvideo+bestaudio/best',
+        'outtmpl': 'media/%(title)s.%(ext)s',
+        'merge_output_format': 'mp4',
+    }
+
+    try:
+        # Get the video
+        with YoutubeDL(OPTIONS) as ydl:
+            stream = ydl.extract_info(URL, download=True)
+
+        video_filename = f"media/{stream['title']}.mp4"
+        response_video = StreamingHttpResponse(file_iterator(video_filename), content_type='video/mp4')
+        response_video['Content-Disposition'] = f'attachment; filename="{stream["title"]}.mp4"'
+
+        return response_video
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({'Unexpected error': str(e)}, status=500)
+
+def file_iterator(filename, chunk_size=8192):
+        with open(filename, "rb") as f:
+            while chunk := f.read(chunk_size):
+                yield chunk
