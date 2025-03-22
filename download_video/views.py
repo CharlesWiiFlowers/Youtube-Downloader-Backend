@@ -43,12 +43,15 @@ def get_info_video(request):
 def download_video(request):
     """Download the video on the given URL"""
 
+    clean_code()
+
     URL = request.GET.get('url')
     if not URL:
         return Response({'error': 'Missing URL parameter'}, status=400)
 
     OPTIONS = {
         'format': 'bestvideo+bestaudio/best',
+        'restrictfilenames': True,
         'outtmpl': 'media/%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
     }
@@ -58,7 +61,7 @@ def download_video(request):
         with YoutubeDL(OPTIONS) as ydl:
             stream = ydl.extract_info(URL, download=True)
 
-        video_filename = f"media/{stream['title']}.mp4"
+        video_filename = stream['requested_downloads'][0]['filepath']
         response_video = StreamingHttpResponse(file_iterator(video_filename), content_type='video/mp4')
         response_video['Content-Disposition'] = f'attachment; filename="{stream["title"]}.mp4"'
 
@@ -73,3 +76,13 @@ def file_iterator(filename, chunk_size=8192):
         with open(filename, "rb") as f:
             while chunk := f.read(chunk_size):
                 yield chunk
+
+def clean_code():
+    """This function is used to clean the code"""
+
+    # Delete the media files
+    import os
+    for file in os.listdir('media/'):
+        os.remove(f'media/{file}')
+
+    print("Code cleaned")
