@@ -24,7 +24,8 @@ def get_info_video(request):
         OPTIONS = {
             'format': FORMAT,
             'outtmpl': 'media/%(title)s.%(ext)s',
-            'merge_output_format': 'mp4', 
+            'merge_output_format': 'mp4',
+            'cookies-from-browser': 'chrome', 
         }
 
         # Get the video
